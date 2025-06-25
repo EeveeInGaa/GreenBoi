@@ -1,0 +1,65 @@
+name: Daily Random Commits
+
+on:
+  schedule:
+    - cron: '0 7 * * *'  # daily at 9:00 (07:00 UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: 🫆 Set up Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: 💤️ Random sleep (0–3h)
+        run: |
+          DELAY=$(( RANDOM % 10 )) # delay between 0 and 3 hours
+          echo "Sleeping for $((DELAY / 60)) minutes..."
+          sleep $DELAY
+
+      - name: 🎲 Decide whether to skip today (10% chance)
+        run: |
+          CHANCE=$(( RANDOM % 100 ))
+          if [[ "$CHANCE" -lt 10 ]]; then
+            echo "Skipping today – 10% chance for no commits (CHANCE=$CHANCE)"
+            exit 0
+          fi
+
+      - name: 👾 Generate 1–10 random commits
+        run: |
+          START_DATE="2025-06-24"
+          COUNT=$(( RANDOM % 10 + 1 ))
+          echo "Doing $COUNT commits today"
+
+          for i in $(seq 1 $COUNT); do
+            NOW=$(date '+%d.%m.%y, %H:%M:%S')
+            DAYS_RUNNING=$(( ( $(date +%s) - $(date -d "$START_DATE" +%s) ) / 86400 ))
+
+            echo "Updated log: $NOW" > log.md
+            echo "Logging for $DAYS_RUNNING days" >> log.md
+
+            git add log.md
+
+            if ! git diff --cached --exit-code --quiet; then
+              git commit -m "Updated log: $NOW, $DAYS_RUNNING days"
+            else
+              echo "No changes to commit – skipping commit $i"
+            fi
+
+            # not all commits at once: 5-25 sec between 
+            sleep $(( RANDOM % 20 + 5 ))
+          done
+
+          git push
