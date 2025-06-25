@@ -25,7 +25,7 @@ jobs:
 
       - name: 💤️ Random sleep (0–3h)
         run: |
-          DELAY=$(( RANDOM % 10 )) # delay between 0 and 3 hours
+          DELAY=$(( RANDOM % 10800 )) # delay between 0 and 3 hours
           echo "Sleeping for $((DELAY / 60)) minutes..."
           sleep $DELAY
 
