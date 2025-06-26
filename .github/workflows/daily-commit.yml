@@ -44,16 +44,16 @@ jobs:
           echo "Doing $COUNT commits today"
 
           for i in $(seq 1 $COUNT); do
-            NOW=$(date '+%d.%m.%y, %H:%M:%S')
+            NOW=$(date -d "+2 hours" '+%d.%m.%y, %H:%M:%S')
             DAYS_RUNNING=$(( ( $(date +%s) - $(date -d "$START_DATE" +%s) ) / 86400 ))
 
-            echo "Updated log: $NOW" > log.md
+            echo "Updated log: $NOW, " > log.md
             echo "Logging for $DAYS_RUNNING days" >> log.md
 
             git add log.md
 
             if ! git diff --cached --exit-code --quiet; then
-              git commit -m "Updated log: $NOW, $DAYS_RUNNING days"
+              git commit -m "Updated log: $NOW, $DAYS_RUNNING days running"
             else
               echo "No changes to commit – skipping commit $i"
             fi
